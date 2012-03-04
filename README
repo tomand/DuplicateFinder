@@ -1,0 +1,8 @@
+First commit.
+
+This is a small dll for comparing files.
+
+Things to do:
+- Add more unit tests
+- Refactor
+- Add comparison of all files in a selected folder
