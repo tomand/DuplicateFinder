@@ -23,7 +23,7 @@ namespace DuplicateFinder.Tests
         }
 
         [Test]
-        public void CompareFiles_FilesAreEqual_ReturnTrue()
+        public void CompareStreams_FilesAreEqual_ReturnTrue()
         {
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
 
@@ -36,7 +36,7 @@ namespace DuplicateFinder.Tests
         }
 
         [Test]
-        public void CompareStreams_FilesAreEqual_ReturnFalse()
+        public void CompareStreams_FilesAreNotEqual_ReturnFalse()
         {
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
 
@@ -49,7 +49,24 @@ namespace DuplicateFinder.Tests
             Assert.IsFalse(result);
         }
 
+        [Test]
+        public void CompareFiles_FilesAreEqual_ReturnTrue()
+        {
+            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
 
+
+            bool result = duplicateFileFinder.CompareFiles(typeof(DuplicateFileFinder).Assembly.Location, typeof(DuplicateFileFinder).Assembly.Location);
+
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        [ExpectedException(typeof(FileNotFoundException))]
+        public void CompareFiles_FirstFileNotFound_ThrowsFileNotFoundException()
+        {
+            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
+            duplicateFileFinder.CompareFiles(@"Ö:\f", typeof(DuplicateFileFinder).Assembly.Location);
+        }
 
         private byte[] GetByteArray(string byteText)
         {

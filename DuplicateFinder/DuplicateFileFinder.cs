@@ -15,21 +15,60 @@ namespace DuplicateFinder
             return System.IO.Directory.Exists(path);
         }
 
-        public List<string> FindDuplicateFiles(string filePath, string directoryToSearch)
+        public List<CheckFile> FindDuplicateFilesInDirectory(string directoryToSearch)
         {
-            List<string> similarFiles = new List<string>();
+            List<CheckFile> files = Directory.GetFiles(directoryToSearch, "*", SearchOption.AllDirectories).Select(f => new CheckFile(f)).ToList<CheckFile>();
 
-            var files = Directory.GetFiles(directoryToSearch, "*.*", SearchOption.AllDirectories);
-            if (files.Length == 0)
-                throw new Exception("Could not find any files");
+            int fileCounter = 1;
+            foreach (CheckFile checkFile in files)
+            {
+                if (!checkFile.Checked)
+                {
+                    checkFile.FileId = fileCounter;
+                    FindDuplicateFiles(checkFile, ref files);
+                    fileCounter++;
+                }
+            }
 
+            return files;
+        }
+
+        private void FindDuplicateFiles(CheckFile checkFile, ref List<CheckFile> files)
+        {
+            foreach (CheckFile file in files)
+            {
+                if (checkFile.FilePath != file.FilePath && CompareFiles(checkFile.FilePath, file.FilePath))
+                {
+                    file.Checked = true;
+                    file.IsDuplicated = true;
+                    checkFile.Checked = true;
+                    checkFile.IsDuplicated = true;
+                    file.FileId = checkFile.FileId;
+                }
+            }
+        }
+
+        public List<CheckFile> FindFilesDuplicateFiles(string filePath, string directoryToSearch)
+        {
+            CheckFile checkFile = new CheckFile(filePath);
+
+            List<CheckFile> checkedFiles = new List<CheckFile>();
+
+            var files = Directory.GetFiles(directoryToSearch, "*", SearchOption.AllDirectories);
+            
             foreach (string file in files)
             {
                 if (filePath != file && CompareFiles(filePath, file))
-                    similarFiles.Add(file);
+                {
+                    CheckFile comparedFile = new CheckFile(file);
+                    comparedFile.Checked = true;
+                    comparedFile.IsDuplicated = true;
+                    comparedFile.FileId = checkFile.FileId;
+                    checkedFiles.Add(comparedFile);
+                }
             }
 
-            return similarFiles;
+            return checkedFiles;
         }
 
         public bool CompareFiles(string filePath1, string filePath2)
@@ -45,14 +84,13 @@ namespace DuplicateFinder
         private void CheckFile(string filePath)
         {
             if (!File.Exists(filePath))
-                throw new Exception("One or both of the files does not exists");
+                throw new FileNotFoundException(string.Format("Cant't find the file: {0}", filePath));
         }
 
         public bool CompareStreams(Stream file1, Stream file2)
         {
             int iterations = (int)Math.Ceiling((double)file1.Length / BYTES_TO_READ);
-
-
+            
             byte[] b1 = new byte[BYTES_TO_READ];
             byte[] b2 = new byte[BYTES_TO_READ];
 
