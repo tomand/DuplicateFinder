@@ -21,4 +21,3 @@ What is shown in the result file is a string built like this:
 Things to do:
 - Add more unit tests
 - Refactor
-- Add comparison of all files in a selected folder
