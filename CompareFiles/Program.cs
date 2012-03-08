@@ -12,6 +12,12 @@ namespace CompareFiles
     {
         static void Main(string[] args)
         {
+            if (args.Length == 0)
+            {
+                Console.WriteLine("You need to provide a directory to search.");
+                return;
+            }
+            
             DuplicateFileFinder df = new DuplicateFileFinder();
             //foreach (string file in df.FindDuplicateFiles(@"d:\TestFileCompare\orginal.txt", @"d:\TestFileCompare"))
             //    Console.WriteLine(file);
