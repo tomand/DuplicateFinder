@@ -21,7 +21,7 @@ namespace CompareFiles
             DuplicateFileFinder df = new DuplicateFileFinder();
             //foreach (string file in df.FindDuplicateFiles(@"d:\TestFileCompare\orginal.txt", @"d:\TestFileCompare"))
             //    Console.WriteLine(file);
-            foreach (CheckFile file in df.FindDuplicateFilesInDirectory(args[0]).OrderBy(f => f.FileId))
+            foreach (CheckFile file in df.FindDuplicateFilesInDirectory(args[0]).OrderBy(f => f.FileId).Where(f => f.IsDuplicated))
             {
                 if (args.Length == 1)
                     Console.WriteLine(string.Format("{1} : {0}", file.FilePath, file.FileId));
