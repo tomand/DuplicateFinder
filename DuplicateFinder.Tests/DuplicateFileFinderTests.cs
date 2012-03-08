@@ -11,16 +11,6 @@ namespace DuplicateFinder.Tests
     [TestFixture]
     public class DuplicateFileFinderTests
     {
-        [Test]
-        public void IsExistingPath_validPathLowerCased_ReturnTrue()
-        {
-            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
-
-            bool result = duplicateFileFinder.DoesPathExist(@"c:\temp");
-
-            Assert.IsTrue(result);
-
-        }
 
         [Test]
         public void CompareStreams_FilesAreEqual_ReturnTrue()
@@ -54,7 +44,6 @@ namespace DuplicateFinder.Tests
         {
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
 
-
             bool result = duplicateFileFinder.CompareFiles(typeof(DuplicateFileFinder).Assembly.Location, typeof(DuplicateFileFinder).Assembly.Location);
 
             Assert.IsTrue(result);
@@ -67,6 +56,16 @@ namespace DuplicateFinder.Tests
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
             duplicateFileFinder.CompareFiles(@"Ö:\f", typeof(DuplicateFileFinder).Assembly.Location);
         }
+
+        [Test]
+        [ExpectedException(typeof(FileNotFoundException))]
+        public void CompareFiles_SecondFileNotFound_ThrowsFileNotFoundException()
+        {
+            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
+            duplicateFileFinder.CompareFiles(typeof(DuplicateFileFinder).Assembly.Location, @"Ö:\f");
+        }
+
+
 
         private byte[] GetByteArray(string byteText)
         {

@@ -10,11 +10,6 @@ namespace DuplicateFinder
     {
         const int BYTES_TO_READ = sizeof(Int64);
 
-        public bool DoesPathExist(string path)
-        {
-            return System.IO.Directory.Exists(path);
-        }
-
         public List<CheckFile> FindDuplicateFilesInDirectory(string directoryToSearch)
         {
             List<CheckFile> files = Directory.GetFiles(directoryToSearch, "*", SearchOption.AllDirectories).Select(f => new CheckFile(f)).ToList<CheckFile>();
