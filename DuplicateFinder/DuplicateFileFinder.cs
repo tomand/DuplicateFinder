@@ -36,6 +36,7 @@ namespace DuplicateFinder
                     FindDuplicateFiles( checkFile, ref files);
                     fileCounter++;
                 }
+                
             }
 
             return files;
@@ -63,6 +64,7 @@ namespace DuplicateFinder
 
         private void FindDuplicateFiles(CheckFile checkFile, ref List<CheckFile> files)
         {
+           
             foreach (CheckFile file in files)
             {
                 if (checkFile.FilePath != file.FilePath && CompareFiles(checkFile.FilePath, file.FilePath))
