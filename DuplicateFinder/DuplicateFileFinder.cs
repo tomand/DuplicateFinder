@@ -11,25 +11,32 @@ namespace DuplicateFinder
         const int BYTES_TO_READ = sizeof(Int64);
         IFileSystemWrapper fileSystem;
 
+        public delegate void EventHandler();
+        public event EventHandler RaiseCustomEvent;
+        private List<DuplicateFinder.CheckFile> files;
+
         public DuplicateFileFinder()
         {
             fileSystem = new FileSystemWrapper();
+            files = new List<CheckFile>();
         }
 
         public DuplicateFileFinder(IFileSystemWrapper fileSystemWrapper)
         {
             fileSystem = fileSystemWrapper;
+            files = new List<CheckFile>();
         }
 
         public List<CheckFile> FindDuplicateFilesInDirectory(string directoryToSearch)
         {
-            List<CheckFile> files = new List<CheckFile>();
+            
 
             files = GetFiles(directoryToSearch, "*").Select(f => new CheckFile(f)).ToList<CheckFile>();
           
             int fileCounter = 1;
             foreach (CheckFile checkFile in files)
             {
+                OnRaiseCustomEvent();
                 if (!checkFile.Checked)
                 {
                     checkFile.FileId = fileCounter;
@@ -38,7 +45,7 @@ namespace DuplicateFinder
                 }
                 
             }
-
+            OnRaiseCustomEvent();
             return files;
         }
 
@@ -116,6 +123,22 @@ namespace DuplicateFinder
             return true;
         }
 
-        
+        protected virtual void OnRaiseCustomEvent()
+        {
+            EventHandler handler = RaiseCustomEvent;
+
+            if (handler != null)
+            {
+                handler();
+            }
+        }
+
+        public  string TotalFiles { get {
+           return files.Count.ToString();
+        } }
+
+        public  string FilesLeft { get {
+           return files.Count(f => f.Checked == false).ToString();
+        } }
     }
 }

@@ -4,43 +4,114 @@ using System.Linq;
 using System.Text;
 using DuplicateFinder;
 using System.IO;
+using System.Threading;
+using System.ComponentModel;
 
 
 namespace CompareFiles
 {
     class Program
     {
+
+        static BackgroundWorker _bw;
+        static bool writeResultToFile = false;
+        static string resultFilePath = "";
+        private static DuplicateFileFinder df;
+
+        
         static void Main(string[] args)
         {
+            df = new DuplicateFileFinder();
+            df.RaiseCustomEvent += HandleCustomEvent;
+
             if (args.Length == 0)
             {
                 Console.WriteLine("You need to provide a directory to search.");
                 return;
             }
-            
-            DuplicateFileFinder df = new DuplicateFileFinder();
-            //foreach (string file in df.FindDuplicateFiles(@"d:\TestFileCompare\orginal.txt", @"d:\TestFileCompare"))
-            //    Console.WriteLine(file);
-            foreach (CheckFile file in df.FindDuplicateFilesInDirectory(args[0]).OrderBy(f => f.FileId).Where(f => f.IsDuplicated))
+
+            writeResultToFile = args.Length > 1;
+            if (writeResultToFile)
+                resultFilePath = args[2];
+
+
+            _bw = new BackgroundWorker
             {
-                if (args.Length == 1)
-                    Console.WriteLine(string.Format("{1} : {0}", file.FilePath, file.FileId));
-                else if (args.Length == 2)
-                    WriteFileToTextFile(string.Format("{1} : {0}", file.FilePath, file.FileId), args[1]);
-            }
-            Console.WriteLine("Please click enter...");
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+
+
+            _bw.DoWork += bw_DoWork;
+            _bw.ProgressChanged += bw_ProgressChanged;
+            _bw.RunWorkerCompleted += bw_RunWorkerCompleted;
+
+            _bw.RunWorkerAsync(args[0]);
+
+
+            //foreach (CheckFile file in df.FindDuplicateFilesInDirectory(args[0]).OrderBy(f => f.FileId).Where(f => f.IsDuplicated))
+            //{
+            //    if (args.Length == 1)
+            //        Console.WriteLine(string.Format("{1} : {0}", file.FilePath, file.FileId));
+            //    else if (args.Length == 2)
+            //        WriteFileToTextFile(string.Format("{1} : {0}", file.FilePath, file.FileId), args[1]);
+            //}
             Console.Read();
         }
 
+        static void bw_DoWork(object sender, DoWorkEventArgs e)
+        {
+             
+            // This is called on the worker thread
+            //Console.WriteLine(e.Argument);        // writes "Message to worker"
+            // Perform time-consuming task...
+            var result = df.FindDuplicateFilesInDirectory(e.Argument.ToString());
+
+            if (!writeResultToFile)
+                Console.WriteLine();
+            foreach (CheckFile file in result.OrderBy(f => f.FileId).Where(f => f.IsDuplicated))
+            {
+                if (!writeResultToFile)
+                    Console.WriteLine(string.Format("{1} : {0}", file.FilePath, file.FileId));
+                else if (writeResultToFile)
+                    WriteFileToTextFile(string.Format("{1} : {0}", file.FilePath, file.FileId), resultFilePath);
+            }
+        }
+
+        static void bw_RunWorkerCompleted(object sender,
+                                     RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled)
+                Console.WriteLine("You canceled!");
+            else if (e.Error != null)
+                Console.WriteLine("Worker exception: " + e.Error.ToString());
+            else
+            {
+                Console.WriteLine("Please click enter...");
+
+            }     // from DoWork
+        }
+
+        static void bw_ProgressChanged(object sender,
+                                  ProgressChangedEventArgs e)
+        {
+            Console.WriteLine("Reached " + e.ProgressPercentage + "%");
+        }
+
+
         private static void WriteFileToTextFile(string fileText, string saveFilePath)
         {
-            using (StreamWriter sw = File.AppendText(saveFilePath)) 
+            using (StreamWriter sw = File.AppendText(saveFilePath))
             {
                 sw.WriteLine(fileText);
-          
-            }    
+
+            }
         }
-       
-        
+
+       private static void HandleCustomEvent()
+        {
+            Console.Write(string.Format("\r{0}/{1}            ", df.FilesLeft, df.TotalFiles));
+        }
+
     }
 }
