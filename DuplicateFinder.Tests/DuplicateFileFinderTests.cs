@@ -5,6 +5,8 @@ using System.Text;
 using NUnit.Framework;
 using DuplicateFinder;
 using System.IO;
+using Moq;
+
 
 namespace DuplicateFinder.Tests
 {
@@ -12,64 +14,65 @@ namespace DuplicateFinder.Tests
     public class DuplicateFileFinderTests
     {
 
-        [Test]
-        public void CompareStreams_FilesAreEqual_ReturnTrue()
-        {
-            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
-
-            byte[] byteArray = GetByteArray(".");
-            MemoryStream file1 = new MemoryStream(byteArray);
-            MemoryStream file2 = new MemoryStream(byteArray);
-            bool result = duplicateFileFinder.CompareStreams(file1, file2);
-
-            Assert.IsTrue(result);
-        }
-
-        [Test]
-        public void CompareStreams_FilesAreNotEqual_ReturnFalse()
-        {
-            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
-
-            byte[] byteArray1 = GetByteArray(".");
-            byte[] byteArray2 = GetByteArray(",");
-            MemoryStream file1 = new MemoryStream(byteArray1);
-            MemoryStream file2 = new MemoryStream(byteArray2);
-            bool result = duplicateFileFinder.CompareStreams(file1, file2);
-
-            Assert.IsFalse(result);
-        }
-
+       
         [Test]
         public void CompareFiles_FilesAreEqual_ReturnTrue()
         {
-            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
+            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
 
-            bool result = duplicateFileFinder.CompareFiles(typeof(DuplicateFileFinder).Assembly.Location, typeof(DuplicateFileFinder).Assembly.Location);
+            bool result = duplicateFileFinder.CompareFiles("file", "file");
 
             Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void CompareFiles_FilesAreNotEqual_ReturnFalse()
+        {
+            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
+
+            bool result = duplicateFileFinder.CompareFiles("file1", "file2");
+
+            Assert.IsFalse(result);
         }
 
         [Test]
         [ExpectedException(typeof(FileNotFoundException))]
         public void CompareFiles_FirstFileNotFound_ThrowsFileNotFoundException()
         {
-            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
-            duplicateFileFinder.CompareFiles(@"Ö:\f", typeof(DuplicateFileFinder).Assembly.Location);
+            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
+            duplicateFileFinder.CompareFiles("notfile","file");
         }
 
         [Test]
         [ExpectedException(typeof(FileNotFoundException))]
         public void CompareFiles_SecondFileNotFound_ThrowsFileNotFoundException()
         {
-            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder();
-            duplicateFileFinder.CompareFiles(typeof(DuplicateFileFinder).Assembly.Location, @"Ö:\f");
+            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
+            duplicateFileFinder.CompareFiles("file", "notfile");
         }
 
-
-
-        private byte[] GetByteArray(string byteText)
+        //- Den testade filen blir markerad som testad även om det inte finns några dubletter
+        [Test]
+        public void FindDuplicateFilesInDirectory_NoDuplicatesFound_FileIsMarkedAsChecked()
         {
-            return Encoding.ASCII.GetBytes(byteText);
+            var mock = new Mock<IFileSystemWrapper>();
+            string directory = "directory1";
+            string file1 = "file1";
+            string file2 = "file2";
+            mock.Setup(fs => fs.GetDirectories(directory)).Returns(new string[] { directory });
+            mock.Setup(fs => fs.GetFiles(directory, "*")).Returns(new string[] { file1, file2 });
+            mock.Setup(fs => fs.Exists(file1)).Returns(true);
+            mock.Setup(fs => fs.Exists(file2)).Returns(true);
+
+            FileSystemWrapperStub fsw = new FileSystemWrapperStub();
+            mock.Setup(fs => fs.GetFileStream(file1)).Returns(fsw.GetFileStream(file1));
+            mock.Setup(fs => fs.GetFileStream(file2)).Returns(fsw.GetFileStream(file2));
+            DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(mock.Object);
+
+            var result = duplicateFileFinder.FindDuplicateFilesInDirectory(directory).First();
+            Assert.IsTrue(result.Checked);
         }
+
+        
     }
 }
