@@ -16,6 +16,8 @@ namespace DuplicateFinder
         bool Exists(string filePath);
 
         Stream GetFileStream(string filePath);
+
+        long GetFileSize(string filePath1);
     }
 
    public class FileSystemWrapper : IFileSystemWrapper
@@ -38,6 +40,11 @@ namespace DuplicateFinder
        public Stream GetFileStream(string filePath)
        {
            return new FileStream(filePath, FileMode.Open, FileAccess.Read);
+       }
+
+       public long GetFileSize(string filePath)
+       {
+           return new FileInfo(filePath).Length;
        }
     }
 
@@ -66,6 +73,11 @@ namespace DuplicateFinder
         private byte[] GetByteArray(string byteText)
         {
             return Encoding.ASCII.GetBytes(byteText);
+        }
+
+        public long GetFileSize(string filePath)
+        {
+            return filePath.Length;
         }
     }
 }

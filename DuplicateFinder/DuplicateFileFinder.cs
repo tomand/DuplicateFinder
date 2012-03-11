@@ -71,10 +71,14 @@ namespace DuplicateFinder
 
         private void FindDuplicateFiles(CheckFile checkFile, ref List<CheckFile> files)
         {
-           
+            if (checkFile.Size == 0)
+                checkFile.Size = fileSystem.GetFileSize(checkFile.FilePath);            
             foreach (CheckFile file in files)
             {
-                if (checkFile.FilePath != file.FilePath && CompareFiles(checkFile.FilePath, file.FilePath))
+                if (file.Size == 0)
+                    file.Size = fileSystem.GetFileSize(file.FilePath); 
+
+                if (checkFile.FilePath != file.FilePath && CompareFiles(checkFile, file))
                 {
                     file.Checked = true;
                     file.IsDuplicated = true;
@@ -87,12 +91,14 @@ namespace DuplicateFinder
         }
 
        
-        public bool CompareFiles(string filePath1, string filePath2)
+        public bool CompareFiles(CheckFile file1, CheckFile file2)
         { 
-            CheckFile(filePath1);
-            CheckFile(filePath2);
+            CheckFile(file1.FilePath);
+            CheckFile(file2.FilePath);
 
-            bool result = CompareStreams(fileSystem.GetFileStream(filePath1), fileSystem.GetFileStream(filePath2));
+            bool result = false;
+            if (file1.Size == file2.Size)
+                result = CompareStreams(fileSystem.GetFileStream(file1.FilePath), fileSystem.GetFileStream(file2.FilePath));
 
             return result;
         }

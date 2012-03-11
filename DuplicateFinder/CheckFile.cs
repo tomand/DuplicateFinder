@@ -29,5 +29,7 @@ namespace DuplicateFinder
         public bool IsDuplicated { get; set; }
 
         public bool Checked { get; set; }
+
+        public long Size { get; set; }
     }
 }
