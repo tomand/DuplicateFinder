@@ -36,9 +36,9 @@ namespace DuplicateFinder
             int fileCounter = 1;
             foreach (CheckFile checkFile in files)
             {
-                OnRaiseCustomEvent();
                 if (!checkFile.Checked)
                 {
+                    OnRaiseCustomEvent();
                     checkFile.FileId = fileCounter;
                     FindDuplicateFiles( checkFile, ref files);
                     fileCounter++;
@@ -73,7 +73,7 @@ namespace DuplicateFinder
         {
             if (checkFile.Size == 0)
                 checkFile.Size = fileSystem.GetFileSize(checkFile.FilePath);            
-            foreach (CheckFile file in files)
+            foreach (CheckFile file in files.Where(f => !f.Checked))
             {
                 if (file.Size == 0)
                     file.Size = fileSystem.GetFileSize(file.FilePath); 
