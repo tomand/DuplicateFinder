@@ -17,7 +17,7 @@ namespace DuplicateFinder
 
         Stream GetFileStream(string filePath);
 
-        long GetFileSize(string filePath1);
+         long GetFileSize(string filePath1);
     }
 
    public class FileSystemWrapper : IFileSystemWrapper
@@ -44,6 +44,8 @@ namespace DuplicateFinder
 
        public long GetFileSize(string filePath)
        {
+           if (!File.Exists(filePath))
+               return 0;
            return new FileInfo(filePath).Length;
        }
     }

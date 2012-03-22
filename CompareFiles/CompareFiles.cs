@@ -10,7 +10,7 @@ using System.ComponentModel;
 
 namespace CompareFiles
 {
-    class Program
+    class CompareFiles
     {
 
         static BackgroundWorker _bw;
@@ -22,7 +22,11 @@ namespace CompareFiles
         static void Main(string[] args)
         {
             df = new DuplicateFileFinder();
-            df.RaiseCustomEvent += HandleCustomEvent;
+            df.RaiseCheckedFileEvent += HandleFileChecked;
+            df.RaiseStartReadingFilesEvent += HandleStartReadingFiles;
+            df.RaiseEndReadingFilesEvent += HandleEndReadingFiles;
+
+
 
             if (args.Length == 0)
             {
@@ -108,10 +112,22 @@ namespace CompareFiles
             }
         }
 
-       private static void HandleCustomEvent()
+       private static void HandleFileChecked()
         {
-            Console.Write(string.Format("\r{0}/{1}            ", df.FilesLeft, df.TotalFiles));
+            Console.Write(string.Format("Files left: {0}            \r", df.FilesLeft, df.TotalFiles));
         }
+
+        private static void HandleStartReadingFiles()
+       {
+           Console.WriteLine(string.Format("Please wait, reading files..."));
+       }
+
+        private static void HandleEndReadingFiles()
+        {
+            Console.WriteLine(string.Format("{0} files found. Starting to compare files.", df.TotalFiles));
+            //Console.WriteLine("");
+        }
+
 
     }
 }

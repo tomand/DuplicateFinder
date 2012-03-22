@@ -15,13 +15,13 @@ namespace DuplicateFinder
             set { filePath = value; }
         }
 
-        public CheckFile(string filePath)
+        public CheckFile(string filePath, long fileSize = 0)
         {
-            // TODO: Complete member initialization
             this.filePath = filePath;
             this.Checked = false;
             this.IsDuplicated = false;
             this.FileId = 0;
+            this.Size = fileSize;
         }
 
         public int FileId { get; set; }

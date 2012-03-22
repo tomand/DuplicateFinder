@@ -11,8 +11,15 @@ namespace DuplicateFinder
         const int BYTES_TO_READ = sizeof(Int64);
         IFileSystemWrapper fileSystem;
 
-        public delegate void EventHandler();
-        public event EventHandler RaiseCustomEvent;
+        public delegate void CheckedFileEventHandler();
+        public event CheckedFileEventHandler RaiseCheckedFileEvent;
+
+        public delegate void StartReadingFilesEventHandler();
+        public event StartReadingFilesEventHandler RaiseStartReadingFilesEvent;
+
+        public delegate void EndReadingFilesEventHandler();
+        public event EndReadingFilesEventHandler RaiseEndReadingFilesEvent;
+
         private List<DuplicateFinder.CheckFile> files;
 
         public DuplicateFileFinder()
@@ -29,23 +36,24 @@ namespace DuplicateFinder
 
         public List<CheckFile> FindDuplicateFilesInDirectory(string directoryToSearch)
         {
-            
+            OnStartReadingFiles();
 
-            files = GetFiles(directoryToSearch, "*").Select(f => new CheckFile(f)).ToList<CheckFile>();
-          
+            files = GetFiles(directoryToSearch, "*").Select(f => new CheckFile(f, fileSystem.GetFileSize(f))).ToList<CheckFile>();
+            OnEndReadingFiles();
             int fileCounter = 1;
             foreach (CheckFile checkFile in files)
             {
                 if (!checkFile.Checked)
                 {
-                    OnRaiseCustomEvent();
+                    OnCheckedFile();
                     checkFile.FileId = fileCounter;
                     FindDuplicateFiles( checkFile, ref files);
                     fileCounter++;
                 }
                 
             }
-            OnRaiseCustomEvent();
+
+            OnCheckedFile();
             return files;
         }
 
@@ -71,13 +79,9 @@ namespace DuplicateFinder
 
         private void FindDuplicateFiles(CheckFile checkFile, ref List<CheckFile> files)
         {
-            if (checkFile.Size == 0)
-                checkFile.Size = fileSystem.GetFileSize(checkFile.FilePath);            
+              
             foreach (CheckFile file in files.Where(f => !f.Checked))
             {
-                if (file.Size == 0)
-                    file.Size = fileSystem.GetFileSize(file.FilePath); 
-
                 if (checkFile.FilePath != file.FilePath && CompareFiles(checkFile, file))
                 {
                     file.Checked = true;
@@ -129,9 +133,29 @@ namespace DuplicateFinder
             return true;
         }
 
-        protected virtual void OnRaiseCustomEvent()
+        protected virtual void OnCheckedFile()
         {
-            EventHandler handler = RaiseCustomEvent;
+            CheckedFileEventHandler handler = RaiseCheckedFileEvent;
+
+            if (handler != null)
+            {
+                handler();
+            }
+        }
+
+        protected virtual void OnStartReadingFiles()
+        {
+            StartReadingFilesEventHandler handler = RaiseStartReadingFilesEvent;
+
+            if (handler != null)
+            {
+                handler();
+            }
+        }
+
+        protected virtual void OnEndReadingFiles()
+        {
+            EndReadingFilesEventHandler handler = RaiseEndReadingFilesEvent;
 
             if (handler != null)
             {
