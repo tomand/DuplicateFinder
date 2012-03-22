@@ -137,29 +137,28 @@ namespace DuplicateFinder
         {
             CheckedFileEventHandler handler = RaiseCheckedFileEvent;
 
-            if (handler != null)
-            {
-                handler();
-            }
+            RaiseEvent(handler);
         }
 
         protected virtual void OnStartReadingFiles()
         {
             StartReadingFilesEventHandler handler = RaiseStartReadingFilesEvent;
 
-            if (handler != null)
-            {
-                handler();
-            }
+            RaiseEvent(handler);
         }
 
         protected virtual void OnEndReadingFiles()
         {
             EndReadingFilesEventHandler handler = RaiseEndReadingFilesEvent;
 
+            RaiseEvent(handler);
+        }
+
+        private static void RaiseEvent(Delegate handler)
+        {
             if (handler != null)
             {
-                handler();
+                handler.DynamicInvoke();
             }
         }
 

@@ -21,3 +21,6 @@ What is shown in the result file is a string built like this:
 Things to do:
 - Add more unit tests
 - Refactor
+- Add support for search in more directories
+- Add support for putting in search string
+- Optimize file comparison if possible
