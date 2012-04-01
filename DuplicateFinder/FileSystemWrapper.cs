@@ -34,7 +34,8 @@ namespace DuplicateFinder
 
        public bool Exists(string filePath)
         {
-            return File.Exists(filePath);
+            
+           return File.Exists(filePath);
         }
 
        public Stream GetFileStream(string filePath)
@@ -47,6 +48,11 @@ namespace DuplicateFinder
            if (!File.Exists(filePath))
                return 0;
            return new FileInfo(filePath).Length;
+       }
+
+       public static IFileSystemWrapper GetInstance()
+       {
+           return new FileSystemWrapper();
        }
     }
 

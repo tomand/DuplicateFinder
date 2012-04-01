@@ -20,7 +20,7 @@ namespace DuplicateFinder.Tests
         {
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
 
-            bool result = duplicateFileFinder.CompareFiles(new CheckFile("file"), new CheckFile("file"));
+            bool result = duplicateFileFinder.CompareFiles(GetCheckFile("file"), GetCheckFile("file"));
 
             Assert.IsTrue(result);
         }
@@ -30,7 +30,7 @@ namespace DuplicateFinder.Tests
         {
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
 
-            bool result = duplicateFileFinder.CompareFiles(new CheckFile("file1", 1), new CheckFile("file2", 2));
+            bool result = duplicateFileFinder.CompareFiles(GetCheckFile("file1"), GetCheckFile("file22"));
 
             Assert.IsFalse(result);
         }
@@ -41,7 +41,7 @@ namespace DuplicateFinder.Tests
         {
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
 
-            bool result = duplicateFileFinder.CompareFiles(new CheckFile("file1"), new CheckFile("file2"));
+            bool result = duplicateFileFinder.CompareFiles(GetCheckFile("file1"), GetCheckFile("file2"));
 
             Assert.IsFalse(result);
         }
@@ -51,7 +51,7 @@ namespace DuplicateFinder.Tests
         public void CompareFiles_FirstFileNotFound_ThrowsFileNotFoundException()
         {
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
-            duplicateFileFinder.CompareFiles(new CheckFile("notfile"), new CheckFile("file"));
+            duplicateFileFinder.CompareFiles(GetCheckFile("notfile"), GetCheckFile("file"));
         }
 
         [Test]
@@ -59,7 +59,12 @@ namespace DuplicateFinder.Tests
         public void CompareFiles_SecondFileNotFound_ThrowsFileNotFoundException()
         {
             DuplicateFileFinder duplicateFileFinder = new DuplicateFileFinder(new FileSystemWrapperStub());
-            duplicateFileFinder.CompareFiles(new CheckFile("file"), new CheckFile("notfile"));
+            duplicateFileFinder.CompareFiles(GetCheckFile("file"), GetCheckFile("notfile"));
+        }
+
+        private CheckFile GetCheckFile(string file)
+        {
+            return new CheckFile(file, new FileSystemWrapperStub());
         }
 
         [Test]

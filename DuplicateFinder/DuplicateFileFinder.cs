@@ -8,7 +8,7 @@ namespace DuplicateFinder
 {
     public class DuplicateFileFinder
     {
-        const int BYTES_TO_READ = sizeof(Int64);
+        
         IFileSystemWrapper fileSystem;
 
         public delegate void CheckedFileEventHandler();
@@ -38,7 +38,7 @@ namespace DuplicateFinder
         {
             OnStartReadingFiles();
 
-            files = GetFiles(directoryToSearch, "*").Select(f => new CheckFile(f, fileSystem.GetFileSize(f))).ToList<CheckFile>();
+            files = GetFiles(directoryToSearch, "*").Select(f => new CheckFile(f, fileSystem)).ToList<CheckFile>();
             OnEndReadingFiles();
             int fileCounter = 1;
             foreach (CheckFile checkFile in files)
@@ -96,42 +96,15 @@ namespace DuplicateFinder
 
        
         public bool CompareFiles(CheckFile file1, CheckFile file2)
-        { 
-            CheckFile(file1.FilePath);
-            CheckFile(file2.FilePath);
-
-            bool result = false;
-            if (file1.Size == file2.Size)
-                result = CompareStreams(fileSystem.GetFileStream(file1.FilePath), fileSystem.GetFileStream(file2.FilePath));
-
-            return result;
-        }
-
-        private void CheckFile(string filePath)
         {
-            if (!fileSystem.Exists(filePath))
-                throw new FileNotFoundException(string.Format("Cant't find the file: {0}", filePath));
-        }
+            return file1.IsEqualTo(file2);
 
-        private bool CompareStreams(Stream file1, Stream file2)
-        {
-            int iterations = (int)Math.Ceiling((double)file1.Length / BYTES_TO_READ);
             
-            byte[] b1 = new byte[BYTES_TO_READ];
-            byte[] b2 = new byte[BYTES_TO_READ];
-
-            for (int i = 0; i < iterations; i++)
-            {
-                file1.Read(b1, 0, BYTES_TO_READ);
-                file2.Read(b2, 0, BYTES_TO_READ);
-
-                if (BitConverter.ToInt64(b1, 0) != BitConverter.ToInt64(b2, 0))
-                    return false;
-            }
-
-
-            return true;
         }
+
+       
+
+        
 
         protected virtual void OnCheckedFile()
         {
