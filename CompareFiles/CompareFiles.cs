@@ -65,11 +65,9 @@ namespace CompareFiles
 
         static void bw_DoWork(object sender, DoWorkEventArgs e)
         {
-             
-            // This is called on the worker thread
-            //Console.WriteLine(e.Argument);        // writes "Message to worker"
-            // Perform time-consuming task...
-            var result = df.FindDuplicateFilesInDirectory(e.Argument.ToString());
+            string[] directories = new string[2];
+            directories[0] = e.Argument.ToString();
+            var result = df.FindDuplicateFilesInDirectory(directories);
 
             if (!writeResultToFile)
                 Console.WriteLine();

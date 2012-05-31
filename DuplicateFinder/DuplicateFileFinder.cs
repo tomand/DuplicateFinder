@@ -21,6 +21,7 @@ namespace DuplicateFinder
         public event EndReadingFilesEventHandler RaiseEndReadingFilesEvent;
 
         private List<DuplicateFinder.CheckFile> files;
+       // private DirectoryInfo[] checkedDirectories;
 
         public DuplicateFileFinder()
         {
@@ -34,11 +35,12 @@ namespace DuplicateFinder
             files = new List<CheckFile>();
         }
 
-        public List<CheckFile> FindDuplicateFilesInDirectory(string directoryToSearch)
+        public List<CheckFile> FindDuplicateFilesInDirectory(string[] directoriesToSearch, string searchString = "*" )
         {
             OnStartReadingFiles();
 
-            files = GetFiles(directoryToSearch, "*").Select(f => new CheckFile(f, fileSystem)).ToList<CheckFile>();
+            GetFileListsFromDirectories(GetUniqueDirectoriesToSearch(directoriesToSearch), searchString);
+            
             OnEndReadingFiles();
             int fileCounter = 1;
             foreach (CheckFile checkFile in files)
@@ -57,6 +59,46 @@ namespace DuplicateFinder
             return files;
         }
 
+        private IEnumerable<string> GetUniqueDirectoriesToSearch(string[] directoriesToSearch)
+        {
+            int numberOfDirectoryParameters = directoriesToSearch.Count();
+            for (int i = 0; i < numberOfDirectoryParameters; i++)
+            {
+                directoriesToSearch.ToList<string>().AddRange(fileSystem.GetDirectories(directoriesToSearch[i]));
+            }
+
+            return directoriesToSearch.Distinct();
+        }
+
+        private void GetFileListsFromDirectories(IEnumerable<string> directoriesToSearch, string searchString)
+        {
+            files = new List<CheckFile>();
+
+            foreach (string directoryPath in directoriesToSearch)
+            {
+                files.AddRange(GetFiles(directoryPath, searchString).Select(f => new CheckFile(f, fileSystem)).ToList<CheckFile>());
+            }
+        }
+
+        public bool IsSubfolder(string parentPath, string childPath)
+        {
+            var parentUri = new Uri(parentPath);
+
+            var childUri = new DirectoryInfo(childPath).Parent;
+
+            while (childUri != null)
+            {
+                if (new Uri(childUri.FullName) == parentUri)
+                {
+                    return true;
+                }
+
+                childUri = childUri.Parent;
+            }
+
+            return false;
+        }
+
        private List<string> GetFiles(string directoryPath, string searchPattern)
         {
             List<string> result = new List<string>();
@@ -64,11 +106,11 @@ namespace DuplicateFinder
             {
                 result.AddRange(fileSystem.GetFiles(directoryPath, searchPattern));
 
-                foreach (string d in fileSystem.GetDirectories(directoryPath))
-                {
-                    if (d != directoryPath)
-                        result.AddRange(GetFiles(d, searchPattern)); 
-                }
+                //foreach (string d in fileSystem.GetDirectories(directoryPath))
+                //{
+                //    if (d != directoryPath)
+                //        result.AddRange(GetFiles(d, searchPattern)); 
+                //}
             }
             catch (Exception)
             {
