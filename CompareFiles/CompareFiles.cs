@@ -8,7 +8,7 @@ using System.Threading;
 using System.ComponentModel;
 
 
-namespace CompareFiles
+namespace  CompareFiles
 {
     class CompareFiles
     {
