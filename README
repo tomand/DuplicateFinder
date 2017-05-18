@@ -3,7 +3,7 @@ This is a small program for comparing files. You send in a directory and all sub
 The solution contains three projects.
 
 - DuplicateFinder: This is the project that does the file comparison.
-- DuplicateFinder.Tests: This is the project for unut tests.
+- DuplicateFinder.Tests: This is the project for unit tests.
 - CompareFiles: This is a console application that runs the comparison.
 
 How to use CompareFiles:
@@ -19,8 +19,6 @@ What is shown in the result file is a string built like this:
 <file Id> : <file path>
 
 Things to do:
-- Add more unit tests
-- Refactor
 - Add support for search in more directories
 - Add support for putting in search string
 - Optimize file comparison if possible
